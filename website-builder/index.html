@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiteForge AI — One-Prompt Website Builder & Live Preview</title>
+    <meta name="description" content="Generate complete, responsive HTML & Tailwind CSS websites from a single prompt with live preview and instant download.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .loader-spin { border-top-color: #6366f1; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+
+    <!-- ========================================================= -->
+    <!-- PASTE YOUR ADSTERRA / MONETAG HEAD / SOCIAL BAR CODE HERE -->
+    <!-- ========================================================= -->
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- Top Navigation Bar -->
+    <header class="h-14 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <!-- Back to Hub Button -->
+            <a href="../" title="Back to ForgeAI Hub"
+               class="flex items-center gap-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 px-2.5 py-1.5 rounded-lg transition">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span class="hidden sm:inline">All Tools</span>
+            </a>
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <i class="fa-solid fa-wand-magic-sparkles text-white text-sm"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base tracking-tight flex items-center gap-2">
+                    SiteForge AI
+                    <span class="text-[10px] uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full">Beta</span>
+                </h1>
+                <p class="text-[11px] text-slate-400 hidden sm:block">1-Prompt AI Website & Landing Page Builder</p>
+            </div>
+        </div>
+
+        <!-- Top Ad Banner Slot (468x60 / 728x90 Desktop) -->
+        <div id="ad-top-banner" class="hidden lg:flex items-center justify-center bg-slate-950/80 border border-dashed border-slate-700 rounded px-4 py-1 text-[11px] text-slate-500 min-w-[468px] h-10">
+            <!-- Paste Adsterra/Monetag 468x60 Banner Script Here -->
+            <span>Ad Space (468x60) — High-CPM Header Slot</span>
+        </div>
+
+        <!-- Right Action Controls -->
+        <div class="flex items-center gap-2">
+            <button onclick="openSettings()" id="api-status-btn" class="flex items-center gap-1.5 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg transition">
+                <span id="status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span id="status-text">API Setup</span>
+            </button>
+            <button onclick="downloadHTML()" id="download-btn" disabled class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-3 py-1.5 rounded-lg transition">
+                <i class="fa-solid fa-download"></i>
+                <span class="hidden sm:inline">Download .HTML</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Split Workspace -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+
+        <!-- Left Panel: AI Prompt & Controls -->
+        <aside class="w-full md:w-[380px] lg:w-[420px] bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col shrink-0 h-[46%] md:h-full">
+            
+            <!-- Prompt Input Area -->
+            <div class="p-4 flex-1 overflow-y-auto space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                            <i class="fa-solid fa-terminal text-indigo-400 mr-1"></i> Describe Your Website
+                        </label>
+                        <button onclick="resetBuilder()" class="text-[11px] text-slate-400 hover:text-rose-400 transition">
+                            <i class="fa-solid fa-rotate-right mr-1"></i>New Project
+                        </button>
+                    </div>
+                    <textarea id="prompt-input" rows="4"
+                        placeholder="Example: Build a modern dark-themed gym & fitness landing page with hero section, membership pricing cards, trainer profiles, and contact form..."
+                        class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 outline-none resize-none transition"></textarea>
+                    
+                    <div class="mt-2 flex items-center justify-between gap-2">
+                        <select id="style-preset" class="bg-slate-950 border border-slate-700 text-xs text-slate-300 rounded-lg px-2.5 py-2 outline-none focus:border-indigo-500">
+                            <option value="Modern SaaS / Startup">Style: Modern SaaS</option>
+                            <option value="Dark Cyberpunk / Tech">Style: Dark Tech</option>
+                            <option value="Clean Minimalist Corporate">Style: Clean Minimalist</option>
+                            <option value="Vibrant E-Commerce Store">Style: E-Commerce</option>
+                            <option value="Luxury Portfolio / Agency">Style: Luxury Agency</option>
+                        </select>
+
+                        <button onclick="generateWebsite()" id="generate-btn"
+                            class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-sm py-2 px-4 rounded-lg shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 transition cursor-pointer">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span id="gen-btn-text">Build Website</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Idea Chips -->
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 mb-2">Quick 1-Click Prompts:</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button onclick="useSample('Create a high-converting digital marketing agency website with services grid, client stats, testimonials, and quote form.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700 transition">Agency Site</button>
+                        <button onclick="useSample('Build a sleek developer portfolio website with animated hero, project showcase cards, tech stack badges, and social links.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700 transition">Portfolio</button>
+                        <button onclick="useSample('Create a restaurant and cafe website with menu categories, chef specials, customer reviews, and table reservation form.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700 transition">Restaurant</button>
+                        <button onclick="useSample('Build an online courses & academy landing page with featured courses, pricing plans, FAQ accordion, and enroll CTA.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700 transition">Online Academy</button>
+                    </div>
+                </div>
+
+                <!-- Status / Build Log -->
+                <div id="build-log" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs space-y-1.5">
+                    <div class="flex items-center gap-2 text-indigo-400 font-medium">
+                        <div id="log-spinner" class="w-3.5 h-3.5 border-2 border-slate-700 loader-spin rounded-full"></div>
+                        <span id="log-title">Generating responsive layout...</span>
+                    </div>
+                    <p id="log-sub" class="text-[11px] text-slate-400">Tip: Once generated, type follow-up edits like "Make the buttons green" or "Add an FAQ section".</p>
+                </div>
+
+                <!-- Sidebar Ad Slot (300x250 Native / Display Banner) -->
+                <div id="ad-sidebar-box" class="bg-slate-950/70 border border-dashed border-slate-800 rounded-xl p-3 flex flex-col items-center justify-center text-center min-h-[140px]">
+                    <!-- Paste Adsterra 300x250 or Native Banner Script Here -->
+                    <span class="text-[10px] uppercase tracking-widest text-slate-600 mb-1">Advertisement</span>
+                    <p class="text-xs text-slate-500">Adsterra / Monetag 300x250 Native Ad Slot</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Panel: Live Preview & Source Code -->
+        <section class="flex-1 flex flex-col bg-slate-950 overflow-hidden h-[54%] md:h-full">
+            
+            <!-- Preview Toolbar -->
+            <div class="h-11 bg-slate-900/80 border-b border-slate-800 px-3 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                    <button onclick="switchTab('preview')" id="tab-preview" class="text-xs font-medium px-3 py-1 rounded-md bg-indigo-600 text-white transition">
+                        <i class="fa-solid fa-eye mr-1"></i>Preview
+                    </button>
+                    <button onclick="switchTab('code')" id="tab-code" class="text-xs font-medium px-3 py-1 rounded-md text-slate-400 hover:text-white transition">
+                        <i class="fa-solid fa-code mr-1"></i>HTML Code
+                    </button>
+                </div>
+
+                <!-- Viewport Size Toggles -->
+                <div id="viewport-controls" class="hidden sm:flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                    <button onclick="setViewport('100%')" id="vp-desktop" title="Desktop View" class="text-xs px-2.5 py-1 rounded bg-slate-800 text-indigo-400">
+                        <i class="fa-solid fa-desktop"></i>
+                    </button>
+                    <button onclick="setViewport('768px')" id="vp-tablet" title="Tablet View" class="text-xs px-2.5 py-1 rounded text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-tablet-screen-button"></i>
+                    </button>
+                    <button onclick="setViewport('390px')" id="vp-mobile" title="Mobile View" class="text-xs px-2.5 py-1 rounded text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-mobile-screen"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="copyCode()" id="copy-btn" disabled class="text-xs bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 px-2.5 py-1 rounded-md border border-slate-700 transition">
+                        <i class="fa-regular fa-copy mr-1"></i>Copy
+                    </button>
+                    <button onclick="openNewTab()" id="newtab-btn" disabled class="text-xs bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 px-2.5 py-1 rounded-md border border-slate-700 transition" title="Open Fullscreen">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Container -->
+            <div id="view-preview" class="flex-1 bg-slate-950 flex items-center justify-center overflow-auto p-0 sm:p-3 relative">
+                
+                <!-- Empty State Placeholder -->
+                <div id="empty-state" class="text-center max-w-md px-6">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto mb-4 text-indigo-400 text-2xl shadow-inner">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-slate-200 mb-1">Your Live Website Will Appear Here</h2>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Describe any website, landing page, or portfolio on the left and click <strong class="text-indigo-400">Build Website</strong>. You can refine it with follow-up prompts and export clean HTML.
+                    </p>
+                </div>
+
+                <!-- Live Rendered Iframe -->
+                <iframe id="preview-frame" class="hidden w-full h-full bg-white rounded-none sm:rounded-xl shadow-2xl border border-slate-800 transition-all duration-300" sandbox="allow-scripts allow-forms allow-modals"></iframe>
+            </div>
+
+            <!-- Code Container -->
+            <div id="view-code" class="hidden flex-1 overflow-auto bg-[#0b1120] p-4">
+                <pre><code id="code-output" class="text-xs font-mono text-emerald-300 whitespace-pre-wrap break-words"></code></pre>
+            </div>
+        </section>
+    </main>
+
+    <!-- API Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    <i class="fa-solid fa-key text-indigo-400"></i> AI Engine Configuration
+                </h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">1. Cloudflare Worker Proxy URL (For Public Users)</label>
+                    <input id="proxy-url-input" type="url" placeholder="https://your-worker.your-subdomain.workers.dev"
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-indigo-500">
+                    <p class="text-[11px] text-slate-500 mt-1">Hides your API key safely when deployed publicly on Netlify/GitHub Pages.</p>
+                </div>
+
+                <div class="relative flex py-1 items-center">
+                    <div class="flex-grow border-t border-slate-800"></div>
+                    <span class="flex-shrink mx-3 text-slate-500 uppercase text-[10px]">OR Use Direct Key</span>
+                    <div class="flex-grow border-t border-slate-800"></div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">2. Free Google Gemini API Key (BYOK)</label>
+                    <input id="gemini-key-input" type="password" placeholder="AIzaSy..."
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-indigo-500">
+                    <p class="text-[11px] text-slate-500 mt-1">Get a free key from <a href="https://aistudio.google.com/apikey" target="_blank" class="text-indigo-400 underline">Google AI Studio</a>. Stored only in your browser.</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeSettings()" class="text-xs px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Cancel</button>
+                <button onclick="saveSettings()" class="text-xs px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // OPTIONAL: HARDCODE YOUR PUBLIC CLOUDFLARE WORKER URL HERE BEFORE DEPLOYING
+        // Example: const DEFAULT_PROXY_URL = "https://siteforge-api.bilal.workers.dev";
+        // =========================================================================
+        const DEFAULT_PROXY_URL = "";
+
+        let currentHTML = "";
+
+        // Initialize API Status on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateStatusBadge();
+        });
+
+        function getConfig() {
+            return {
+                proxyUrl: localStorage.getItem('sf_proxy_url') || DEFAULT_PROXY_URL,
+                geminiKey: localStorage.getItem('sf_gemini_key') || ""
+            };
+        }
+
+        function updateStatusBadge() {
+            const { proxyUrl, geminiKey } = getConfig();
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            if (proxyUrl || geminiKey) {
+                dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+                text.textContent = proxyUrl ? "AI Ready (Cloud)" : "AI Ready (Key)";
+            } else {
+                dot.className = "w-2 h-2 rounded-full bg-amber-400";
+                text.textContent = "Setup API Key";
+            }
+        }
+
+        function openSettings() {
+            const { proxyUrl, geminiKey } = getConfig();
+            document.getElementById('proxy-url-input').value = proxyUrl;
+            document.getElementById('gemini-key-input').value = geminiKey;
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function saveSettings() {
+            const proxy = document.getElementById('proxy-url-input').value.trim();
+            const key = document.getElementById('gemini-key-input').value.trim();
+            localStorage.setItem('sf_proxy_url', proxy);
+            localStorage.setItem('sf_gemini_key', key);
+            updateStatusBadge();
+            closeSettings();
+        }
+
+        function useSample(text) {
+            document.getElementById('prompt-input').value = text;
+        }
+
+        function resetBuilder() {
+            currentHTML = "";
+            document.getElementById('prompt-input').value = "";
+            document.getElementById('preview-frame').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+            document.getElementById('code-output').textContent = "";
+            document.getElementById('gen-btn-text').textContent = "Build Website";
+            document.getElementById('download-btn').disabled = true;
+            document.getElementById('copy-btn').disabled = true;
+            document.getElementById('newtab-btn').disabled = true;
+            document.getElementById('build-log').classList.add('hidden');
+        }
+
+        function switchTab(tab) {
+            const isPreview = tab === 'preview';
+            document.getElementById('view-preview').classList.toggle('hidden', !isPreview);
+            document.getElementById('view-code').classList.toggle('hidden', isPreview);
+            document.getElementById('viewport-controls').classList.toggle('hidden', !isPreview);
+
+            document.getElementById('tab-preview').className = isPreview
+                ? "text-xs font-medium px-3 py-1 rounded-md bg-indigo-600 text-white transition"
+                : "text-xs font-medium px-3 py-1 rounded-md text-slate-400 hover:text-white transition";
+            document.getElementById('tab-code').className = !isPreview
+                ? "text-xs font-medium px-3 py-1 rounded-md bg-indigo-600 text-white transition"
+                : "text-xs font-medium px-3 py-1 rounded-md text-slate-400 hover:text-white transition";
+        }
+
+        function setViewport(width) {
+            const frame = document.getElementById('preview-frame');
+            frame.style.width = width;
+            ['vp-desktop', 'vp-tablet', 'vp-mobile'].forEach(id => {
+                document.getElementById(id).className = "text-xs px-2.5 py-1 rounded text-slate-400 hover:text-white";
+            });
+            const activeId = width === '100%' ? 'vp-desktop' : width === '768px' ? 'vp-tablet' : 'vp-mobile';
+            document.getElementById(activeId).className = "text-xs px-2.5 py-1 rounded bg-slate-800 text-indigo-400";
+        }
+
+        function extractCleanHTML(raw) {
+            let cleaned = raw.trim();
+            const match = cleaned.match(/```html\s*([\s\S]*?)```/i) || cleaned.match(/```\s*([\s\S]*?)```/i);
+            if (match) cleaned = match[1].trim();
+            return cleaned;
+        }
+
+        async function generateWebsite() {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            if (!prompt) {
+                alert("Please describe the website you want to build!");
+                return;
+            }
+
+            const { proxyUrl, geminiKey } = getConfig();
+            if (!proxyUrl && !geminiKey) {
+                openSettings();
+                return;
+            }
+
+            const style = document.getElementById('style-preset').value;
+            const btn = document.getElementById('generate-btn');
+            const logBox = document.getElementById('build-log');
+            const logTitle = document.getElementById('log-title');
+            const spinner = document.getElementById('log-spinner');
+
+            btn.disabled = true;
+            btn.classList.add('opacity-70');
+            logBox.classList.remove('hidden');
+            spinner.classList.remove('hidden');
+            logTitle.textContent = currentHTML ? "Applying your edits to the website..." : "Designing & coding your website...";
+
+            const systemPrompt = `You are an elite senior frontend web developer and UI/UX designer.
+Generate a complete, single-file, responsive, production-grade HTML5 document using Tailwind CSS CDN (<script src="https://cdn.tailwindcss.com"><\/script>) and FontAwesome CDN (<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">).
+Rules:
+1. Output ONLY raw valid HTML starting with <!DOCTYPE html> and ending with </html>. Do NOT include any explanations or markdown outside the code.
+2. Use realistic, high-converting copy, clean spacing, modern gradients/shadows, interactive JavaScript (e.g., mobile menu toggle, modal, smooth scroll, working form alert), and reliable Unsplash image URLs (https://images.unsplash.com/...) or clean SVG/CSS illustrations.
+3. Visual Style Preset: ${style}.`;
+
+            const userMessage = currentHTML
+                ? `Here is the current website HTML:\n\n${currentHTML}\n\nUpdate this website based on the following request while preserving existing quality and layout:\n${prompt}`
+                : `Build a complete website for: ${prompt}`;
+
+            try {
+                let rawOutput = "";
+
+                if (proxyUrl) {
+                    const res = await fetch(proxyUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ systemPrompt, userMessage })
+                    });
+                    if (!res.ok) throw new Error("Proxy server error: " + res.status);
+                    const data = await res.json();
+                    rawOutput = data.html || data.text || "";
+                } else {
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`;
+                    const res = await fetch(endpoint, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            systemInstruction: { parts: [{ text: systemPrompt }] },
+                            contents: [{ role: "user", parts: [{ text: userMessage }] }],
+                            generationConfig: { temperature: 0.7 }
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error.message);
+                    rawOutput = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                }
+
+                const htmlCode = extractCleanHTML(rawOutput);
+                if (!htmlCode || !htmlCode.includes("<")) {
+                    throw new Error("AI did not return valid HTML. Try refining your prompt.");
+                }
+
+                currentHTML = htmlCode;
+                renderOutput(htmlCode);
+
+                spinner.classList.add('hidden');
+                logTitle.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Website built successfully!`;
+                document.getElementById('gen-btn-text').textContent = "Update Website";
+                document.getElementById('prompt-input').value = "";
+                document.getElementById('prompt-input').placeholder = "Ask for edits: e.g., 'Change primary color to emerald', 'Add a FAQ section'...";
+
+            } catch (err) {
+                spinner.classList.add('hidden');
+                logTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400 mr-1"></i> ${err.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-70');
+            }
+        }
+
+        function renderOutput(html) {
+            document.getElementById('empty-state').classList.add('hidden');
+            const frame = document.getElementById('preview-frame');
+            frame.classList.remove('hidden');
+            frame.srcdoc = html;
+
+            document.getElementById('code-output').textContent = html;
+            document.getElementById('download-btn').disabled = false;
+            document.getElementById('copy-btn').disabled = false;
+            document.getElementById('newtab-btn').disabled = false;
+        }
+
+        function downloadHTML() {
+            if (!currentHTML) return;
+            const blob = new Blob([currentHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ai-generated-website.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function copyCode() {
+            if (!currentHTML) return;
+            navigator.clipboard.writeText(currentHTML);
+            const btn = document.getElementById('copy-btn');
+            btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400 mr-1"></i>Copied`;
+            setTimeout(() => {
+                btn.innerHTML = `<i class="fa-regular fa-copy mr-1"></i>Copy`;
+            }, 1800);
+        }
+
+        function openNewTab() {
+            if (!currentHTML) return;
+            const blob = new Blob([currentHTML], { type: 'text/html' });
+            window.open(URL.createObjectURL(blob), '_blank');
+        }
+    </script>
+</body>
+</html>

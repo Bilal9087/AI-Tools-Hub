@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArcadeForge AI — One-Prompt Playable Game Generator</title>
+    <meta name="description" content="Turn a single text prompt into a playable HTML5 browser game with sound effects, score system, and 1-click download.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        .loader-spin { border-top-color: #a855f7; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+
+    <!-- ========================================================= -->
+    <!-- PASTE YOUR ADSTERRA / MONETAG HEAD / SOCIAL BAR CODE HERE -->
+    <!-- ========================================================= -->
+</head>
+<body class="bg-[#090d16] text-slate-100 h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- Top Header -->
+    <header class="h-14 bg-slate-900/95 border-b border-slate-800 px-4 flex items-center justify-between shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <!-- Back to Hub Button -->
+            <a href="../" title="Back to ForgeAI Hub"
+               class="flex items-center gap-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 px-2.5 py-1.5 rounded-lg transition">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span class="hidden sm:inline">All Tools</span>
+            </a>
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-600/25">
+                <i class="fa-solid fa-gamepad text-white text-sm"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base tracking-tight flex items-center gap-2">
+                    ArcadeForge AI
+                    <span class="text-[10px] uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full">Game Studio</span>
+                </h1>
+                <p class="text-[11px] text-slate-400 hidden sm:block">Create & Play Instant HTML5 Games from 1 Prompt</p>
+            </div>
+        </div>
+
+        <!-- Top Ad Banner Slot (468x60) -->
+        <div id="ad-top-banner" class="hidden lg:flex items-center justify-center bg-slate-950/80 border border-dashed border-slate-700 rounded px-4 py-1 text-[11px] text-slate-500 min-w-[468px] h-10">
+            <!-- Paste Adsterra/Monetag 468x60 Banner Script Here -->
+            <span>Ad Space (468x60) — Gaming Audience High-CPM Slot</span>
+        </div>
+
+        <!-- Right Controls -->
+        <div class="flex items-center gap-2">
+            <button onclick="openSettings()" class="flex items-center gap-1.5 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg transition">
+                <span id="status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span id="status-text">API Setup</span>
+            </button>
+            <button onclick="downloadGame()" id="download-btn" disabled class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-3 py-1.5 rounded-lg transition">
+                <i class="fa-solid fa-download"></i>
+                <span class="hidden sm:inline">Download Game</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Split Studio -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+
+        <!-- Left Sidebar: Prompt & Game Presets -->
+        <aside class="w-full md:w-[380px] lg:w-[420px] bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col shrink-0 h-[46%] md:h-full">
+            <div class="p-4 flex-1 overflow-y-auto space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                            <i class="fa-solid fa-wand-sparkles text-purple-400 mr-1"></i> Describe Your Game
+                        </label>
+                        <button onclick="resetStudio()" class="text-[11px] text-slate-400 hover:text-rose-400 transition">
+                            <i class="fa-solid fa-rotate-right mr-1"></i>New Game
+                        </button>
+                    </div>
+
+                    <textarea id="prompt-input" rows="4"
+                        placeholder="Example: Create a neon space shooter game where my spaceship dodges asteroids, shoots lasers with Spacebar, collects shield power-ups, and has a boss fight at 500 points..."
+                        class="w-full bg-slate-950 border border-slate-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 outline-none resize-none transition"></textarea>
+
+                    <div class="mt-2 flex items-center justify-between gap-2">
+                        <select id="genre-preset" class="bg-slate-950 border border-slate-700 text-xs text-slate-300 rounded-lg px-2.5 py-2 outline-none focus:border-purple-500">
+                            <option value="Neon Retro Arcade">Style: Neon Arcade</option>
+                            <option value="2D Endless Runner / Platformer">Style: Platformer</option>
+                            <option value="Top-Down Car Racing / Traffic Dodge">Style: Car Racing</option>
+                            <option value="Fast-Paced Puzzle / Reflex">Style: Puzzle / Reflex</option>
+                            <option value="Cyberpunk Action Shooter">Style: Action Shooter</option>
+                        </select>
+
+                        <button onclick="generateGame()" id="generate-btn"
+                            class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold text-sm py-2 px-4 rounded-lg shadow-lg shadow-purple-600/25 flex items-center justify-center gap-2 transition cursor-pointer">
+                            <i class="fa-solid fa-play"></i>
+                            <span id="gen-btn-text">Create Game</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 1-Click Viral Game Prompts -->
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 mb-2">1-Click Viral Game Ideas:</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button onclick="useSample('Create a 3-lane highway car racing game with nitro boost, coin pickups, increasing traffic speed, and high score tracker.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700 transition">Highway Racer</button>
+                        <button onclick="useSample('Build a neon cyber-snake game with glowing food orbs, speed power-ups, combo multiplier, and synthesized retro sound effects.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700 transition">Cyber Snake</button>
+                        <button onclick="useSample('Create an endless jungle ninja runner game with double-jump, sliding under obstacles, coin collection, and day-night background shift.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700 transition">Ninja Runner</button>
+                        <button onclick="useSample('Build a brick-breaker arcade game with multi-ball power-up, laser paddle, particle explosions, and 3 progressive levels.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700 transition">Brick Breaker</button>
+                    </div>
+                </div>
+
+                <!-- Status Log -->
+                <div id="build-log" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs space-y-1.5">
+                    <div class="flex items-center gap-2 text-purple-400 font-medium">
+                        <div id="log-spinner" class="w-3.5 h-3.5 border-2 border-slate-700 loader-spin rounded-full"></div>
+                        <span id="log-title">Coding game physics & canvas engine...</span>
+                    </div>
+                    <p id="log-sub" class="text-[11px] text-slate-400">Click inside the game screen after loading to activate keyboard controls.</p>
+                </div>
+
+                <!-- Sidebar Ad Slot (300x250 Native / Display Banner) -->
+                <div id="ad-sidebar-box" class="bg-slate-950/70 border border-dashed border-slate-800 rounded-xl p-3 flex flex-col items-center justify-center text-center min-h-[140px]">
+                    <!-- Paste Adsterra 300x250 or Native Banner Script Here -->
+                    <span class="text-[10px] uppercase tracking-widest text-slate-600 mb-1">Advertisement</span>
+                    <p class="text-xs text-slate-500">Adsterra / Monetag 300x250 Native Ad Slot</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Panel: Playable Game Stage & Source Code -->
+        <section class="flex-1 flex flex-col bg-[#060911] overflow-hidden h-[54%] md:h-full">
+            
+            <!-- Stage Toolbar -->
+            <div class="h-11 bg-slate-900/90 border-b border-slate-800 px-3 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                    <button onclick="switchTab('play')" id="tab-play" class="text-xs font-medium px-3 py-1 rounded-md bg-purple-600 text-white transition">
+                        <i class="fa-solid fa-gamepad mr-1"></i>Play Game
+                    </button>
+                    <button onclick="switchTab('code')" id="tab-code" class="text-xs font-medium px-3 py-1 rounded-md text-slate-400 hover:text-white transition">
+                        <i class="fa-solid fa-code mr-1"></i>Game Code
+                    </button>
+                </div>
+
+                <div class="hidden sm:flex items-center gap-2 text-[11px] text-slate-400">
+                    <i class="fa-solid fa-keyboard text-purple-400"></i>
+                    <span>Click game canvas to focus controls</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="restartGame()" id="restart-btn" disabled class="text-xs bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 px-2.5 py-1 rounded-md border border-slate-700 transition" title="Reload Game">
+                        <i class="fa-solid fa-rotate-left mr-1"></i>Reload
+                    </button>
+                    <button onclick="copyCode()" id="copy-btn" disabled class="text-xs bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 px-2.5 py-1 rounded-md border border-slate-700 transition">
+                        <i class="fa-regular fa-copy mr-1"></i>Copy
+                    </button>
+                    <button onclick="openFullscreen()" id="fullscreen-btn" disabled class="text-xs bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 px-2.5 py-1 rounded-md border border-slate-700 transition" title="Play Fullscreen">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Playable Stage Container -->
+            <div id="view-play" class="flex-1 flex items-center justify-center overflow-hidden p-0 sm:p-3 relative">
+                
+                <!-- Empty State -->
+                <div id="empty-state" class="text-center max-w-md px-6">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto mb-4 text-purple-400 text-2xl shadow-inner">
+                        <i class="fa-solid fa-joystick"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-slate-200 mb-1">Your Playable Game Stage</h2>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Type any game idea on the left and click <strong class="text-purple-400">Create Game</strong>. The AI will build a complete HTML5 game with graphics, score, and sound effects ready to play right here!
+                    </p>
+                </div>
+
+                <!-- Live Playable Game Iframe -->
+                <iframe id="game-frame" class="hidden w-full h-full bg-black rounded-none sm:rounded-xl shadow-2xl border border-slate-800" sandbox="allow-scripts allow-pointer-lock"></iframe>
+            </div>
+
+            <!-- Code Container -->
+            <div id="view-code" class="hidden flex-1 overflow-auto bg-[#0b1120] p-4">
+                <pre><code id="code-output" class="text-xs font-mono text-purple-300 whitespace-pre-wrap break-words"></code></pre>
+            </div>
+        </section>
+    </main>
+
+    <!-- API Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    <i class="fa-solid fa-key text-purple-400"></i> AI Game Engine Setup
+                </h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">1. Cloudflare Worker Proxy URL (Recommended for Public Site)</label>
+                    <input id="proxy-url-input" type="url" placeholder="https://your-worker.your-subdomain.workers.dev"
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-purple-500">
+                </div>
+
+                <div class="relative flex py-1 items-center">
+                    <div class="flex-grow border-t border-slate-800"></div>
+                    <span class="flex-shrink mx-3 text-slate-500 uppercase text-[10px]">OR Direct Gemini Key</span>
+                    <div class="flex-grow border-t border-slate-800"></div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">2. Free Google Gemini API Key</label>
+                    <input id="gemini-key-input" type="password" placeholder="AIzaSy..."
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-purple-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeSettings()" class="text-xs px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Cancel</button>
+                <button onclick="saveSettings()" class="text-xs px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // PASTE YOUR CLOUDFLARE WORKER URL HERE BEFORE DEPLOYING PUBLICLY
+        // =========================================================================
+        const DEFAULT_PROXY_URL = "";
+
+        let currentGameHTML = "";
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateStatusBadge();
+        });
+
+        function getConfig() {
+            return {
+                proxyUrl: localStorage.getItem('af_proxy_url') || DEFAULT_PROXY_URL,
+                geminiKey: localStorage.getItem('af_gemini_key') || ""
+            };
+        }
+
+        function updateStatusBadge() {
+            const { proxyUrl, geminiKey } = getConfig();
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            if (proxyUrl || geminiKey) {
+                dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+                text.textContent = proxyUrl ? "Engine Ready" : "Key Active";
+            } else {
+                dot.className = "w-2 h-2 rounded-full bg-amber-400";
+                text.textContent = "Setup API Key";
+            }
+        }
+
+        function openSettings() {
+            const { proxyUrl, geminiKey } = getConfig();
+            document.getElementById('proxy-url-input').value = proxyUrl;
+            document.getElementById('gemini-key-input').value = geminiKey;
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function saveSettings() {
+            localStorage.setItem('af_proxy_url', document.getElementById('proxy-url-input').value.trim());
+            localStorage.setItem('af_gemini_key', document.getElementById('gemini-key-input').value.trim());
+            updateStatusBadge();
+            closeSettings();
+        }
+
+        function useSample(text) {
+            document.getElementById('prompt-input').value = text;
+        }
+
+        function resetStudio() {
+            currentGameHTML = "";
+            document.getElementById('prompt-input').value = "";
+            document.getElementById('game-frame').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+            document.getElementById('code-output').textContent = "";
+            document.getElementById('gen-btn-text').textContent = "Create Game";
+            ['download-btn', 'copy-btn', 'fullscreen-btn', 'restart-btn'].forEach(id => {
+                document.getElementById(id).disabled = true;
+            });
+            document.getElementById('build-log').classList.add('hidden');
+        }
+
+        function switchTab(tab) {
+            const isPlay = tab === 'play';
+            document.getElementById('view-play').classList.toggle('hidden', !isPlay);
+            document.getElementById('view-code').classList.toggle('hidden', isPlay);
+
+            document.getElementById('tab-play').className = isPlay
+                ? "text-xs font-medium px-3 py-1 rounded-md bg-purple-600 text-white transition"
+                : "text-xs font-medium px-3 py-1 rounded-md text-slate-400 hover:text-white transition";
+            document.getElementById('tab-code').className = !isPlay
+                ? "text-xs font-medium px-3 py-1 rounded-md bg-purple-600 text-white transition"
+                : "text-xs font-medium px-3 py-1 rounded-md text-slate-400 hover:text-white transition";
+        }
+
+        function extractCleanHTML(raw) {
+            let cleaned = raw.trim();
+            const match = cleaned.match(/```html\s*([\s\S]*?)```/i) || cleaned.match(/```\s*([\s\S]*?)```/i);
+            if (match) cleaned = match[1].trim();
+            return cleaned;
+        }
+
+        async function generateGame() {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            if (!prompt) {
+                alert("Please describe the game you want to create!");
+                return;
+            }
+
+            const { proxyUrl, geminiKey } = getConfig();
+            if (!proxyUrl && !geminiKey) {
+                openSettings();
+                return;
+            }
+
+            const genre = document.getElementById('genre-preset').value;
+            const btn = document.getElementById('generate-btn');
+            const logBox = document.getElementById('build-log');
+            const logTitle = document.getElementById('log-title');
+            const spinner = document.getElementById('log-spinner');
+
+            btn.disabled = true;
+            btn.classList.add('opacity-70');
+            logBox.classList.remove('hidden');
+            spinner.classList.remove('hidden');
+            logTitle.textContent = currentGameHTML ? "Updating game mechanics..." : "Building playable HTML5 game...";
+
+            const systemPrompt = `You are an expert HTML5 Canvas game developer and arcade game designer.
+Create a complete, self-contained, immediately playable single-file HTML5 game using HTML5 Canvas and vanilla JavaScript.
+Strict Rules:
+1. Output ONLY valid HTML starting with <!DOCTYPE html> and ending with </html>. No markdown or commentary outside code.
+2. Make the canvas responsive (fill 100% viewport cleanly with overflow:hidden and dark background) and include:
+   - Clear Title & "Click or Press SPACE to Start" overlay with visible controls instructions.
+   - Smooth 60fps requestAnimationFrame game loop, collision detection, particle effects, and progressive difficulty.
+   - Live Score & High Score (localStorage) HUD on screen.
+   - Synthesized retro sound effects using Web Audio API (no external audio files needed) with a Mute toggle button.
+   - Clean "Game Over" overlay with final score and instant "Play Again" button/key.
+   - Prevent default browser scrolling on Arrow keys and Spacebar (e.preventDefault()).
+   - Also support touch/click controls so mobile users can play too.
+3. Visual Aesthetic: ${genre}.`;
+
+            const userMessage = currentGameHTML
+                ? `Here is the current game HTML:\n\n${currentGameHTML}\n\nModify and improve this game according to:\n${prompt}`
+                : `Build a fun, polished, playable browser game based on: ${prompt}`;
+
+            try {
+                let rawOutput = "";
+
+                if (proxyUrl) {
+                    const res = await fetch(proxyUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ systemPrompt, userMessage })
+                    });
+                    if (!res.ok) throw new Error("Proxy error: " + res.status);
+                    const data = await res.json();
+                    rawOutput = data.html || data.text || "";
+                } else {
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`;
+                    const res = await fetch(endpoint, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            systemInstruction: { parts: [{ text: systemPrompt }] },
+                            contents: [{ role: "user", parts: [{ text: userMessage }] }],
+                            generationConfig: { temperature: 0.75 }
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error.message);
+                    rawOutput = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                }
+
+                const htmlCode = extractCleanHTML(rawOutput);
+                if (!htmlCode || !htmlCode.includes("<")) {
+                    throw new Error("AI returned invalid game code. Please try again.");
+                }
+
+                currentGameHTML = htmlCode;
+                renderGame(htmlCode);
+
+                spinner.classList.add('hidden');
+                logTitle.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Game ready! Click the screen to play.`;
+                document.getElementById('gen-btn-text').textContent = "Update Game";
+                document.getElementById('prompt-input').value = "";
+                document.getElementById('prompt-input').placeholder = "Ask for game upgrades: e.g., 'Add a boss fight', 'Make player faster'...";
+
+            } catch (err) {
+                spinner.classList.add('hidden');
+                logTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400 mr-1"></i> ${err.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-70');
+            }
+        }
+
+        function renderGame(html) {
+            document.getElementById('empty-state').classList.add('hidden');
+            const frame = document.getElementById('game-frame');
+            frame.classList.remove('hidden');
+            frame.srcdoc = html;
+            frame.onload = () => frame.contentWindow?.focus();
+
+            document.getElementById('code-output').textContent = html;
+            ['download-btn', 'copy-btn', 'fullscreen-btn', 'restart-btn'].forEach(id => {
+                document.getElementById(id).disabled = false;
+            });
+        }
+
+        function restartGame() {
+            if (!currentGameHTML) return;
+            const frame = document.getElementById('game-frame');
+            frame.srcdoc = currentGameHTML;
+            frame.onload = () => frame.contentWindow?.focus();
+        }
+
+        function downloadGame() {
+            if (!currentGameHTML) return;
+            const blob = new Blob([currentGameHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ai-arcade-game.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function copyCode() {
+            if (!currentGameHTML) return;
+            navigator.clipboard.writeText(currentGameHTML);
+            const btn = document.getElementById('copy-btn');
+            btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400 mr-1"></i>Copied`;
+            setTimeout(() => {
+                btn.innerHTML = `<i class="fa-regular fa-copy mr-1"></i>Copy`;
+            }, 1800);
+        }
+
+        function openFullscreen() {
+            if (!currentGameHTML) return;
+            const blob = new Blob([currentGameHTML], { type: 'text/html' });
+            window.open(URL.createObjectURL(blob), '_blank');
+        }
+    </script>
+</body>
+</html>
