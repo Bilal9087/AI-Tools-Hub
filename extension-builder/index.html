@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExtForge AI — 1-Prompt Chrome Extension Builder (ZIP Export)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .loader-spin { border-top-color: #f59e0b; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+    <!-- PASTE YOUR ADSTERRA / MONETAG HEAD CODE HERE -->
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- Header -->
+    <header class="h-14 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3">
+            <a href="../" class="flex items-center gap-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 px-2.5 py-1.5 rounded-lg transition">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span class="hidden sm:inline">All Tools</span>
+            </a>
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                <i class="fa-solid fa-puzzle-piece text-white text-sm"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base tracking-tight">ExtForge AI <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full ml-1">Manifest V3</span></h1>
+                <p class="text-[11px] text-slate-400 hidden sm:block">Build Ready-to-Load Chrome Extensions in 1 Prompt</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button onclick="openSettings()" class="flex items-center gap-1.5 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg transition">
+                <span id="status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span id="status-text">API Setup</span>
+            </button>
+            <button onclick="downloadZip()" id="zip-btn" disabled class="flex items-center gap-1.5 text-xs bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white font-semibold px-3 py-1.5 rounded-lg transition">
+                <i class="fa-solid fa-file-zipper"></i>
+                <span>Download .ZIP</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <!-- Left Input -->
+        <aside class="w-full md:w-[390px] bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 p-4 flex flex-col justify-between overflow-y-auto shrink-0">
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-300 block mb-1.5">
+                        <i class="fa-brands fa-chrome text-amber-400 mr-1"></i> Describe Your Chrome Extension
+                    </label>
+                    <textarea id="prompt-input" rows="4"
+                        placeholder="Example: Build a Chrome extension that lets users toggle Dark Mode on any webpage, adjust brightness, and save per-site preferences..."
+                        class="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 outline-none resize-none"></textarea>
+
+                    <button onclick="generateExtension()" id="generate-btn"
+                        class="mt-2 w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-semibold text-sm py-2.5 px-4 rounded-lg shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Generate Extension Files</span>
+                    </button>
+                </div>
+
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 mb-2">Quick Extension Ideas:</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button onclick="useSample('A Pomodoro focus timer extension with 25/5 min countdown, sound alert, and task checklist inside popup.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Pomodoro Timer</button>
+                        <button onclick="useSample('A Color Picker & Hex/RGB palette saver extension for web designers with 1-click copy.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Color Picker</button>
+                        <button onclick="useSample('A quick sticky notes & clipboard manager extension that saves notes locally in browser storage.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Sticky Notes</button>
+                    </div>
+                </div>
+
+                <div id="build-log" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs">
+                    <div class="flex items-center gap-2 text-amber-400 font-medium">
+                        <div id="log-spinner" class="w-3.5 h-3.5 border-2 border-slate-700 loader-spin rounded-full"></div>
+                        <span id="log-title">Generating Manifest V3 files...</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-[11px] text-slate-400 space-y-1">
+                    <p class="font-semibold text-slate-300"><i class="fa-solid fa-circle-info text-amber-400 mr-1"></i> How to Install in Chrome:</p>
+                    <p>1. Download & extract the `.zip` folder.</p>
+                    <p>2. Open <code class="text-amber-300">chrome://extensions</code> & turn ON <strong>Developer Mode</strong>.</p>
+                    <p>3. Click <strong>Load unpacked</strong> and select the folder.</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right File Inspector -->
+        <section class="flex-1 bg-slate-950 flex flex-col overflow-hidden">
+            <div class="h-11 bg-slate-900 border-b border-slate-800 px-3 flex items-center gap-2 shrink-0 overflow-x-auto">
+                <button onclick="showFile('manifest')" id="tab-manifest" class="text-xs font-medium px-3 py-1 rounded-md bg-amber-600 text-white">manifest.json</button>
+                <button onclick="showFile('html')" id="tab-html" class="text-xs font-medium px-3 py-1 rounded-md text-slate-400 hover:text-white">popup.html</button>
+                <button onclick="showFile('js')" id="tab-js" class="text-xs font-medium px-3 py-1 rounded-md text-slate-400 hover:text-white">popup.js</button>
+            </div>
+
+            <div class="flex-1 overflow-auto p-4 bg-[#0b1120]">
+                <pre><code id="file-viewer" class="text-xs font-mono text-amber-200 whitespace-pre-wrap">// Your generated Manifest V3 Chrome Extension files will appear here...</code></pre>
+            </div>
+        </section>
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base"><i class="fa-solid fa-key text-amber-400 mr-1"></i> API Configuration</h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">Cloudflare Worker Proxy URL</label>
+                    <input id="proxy-url-input" type="url" placeholder="https://your-worker.workers.dev" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">OR Free Google Gemini API Key</label>
+                    <input id="gemini-key-input" type="password" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeSettings()" class="text-xs px-4 py-2 rounded-lg bg-slate-800 text-slate-300">Cancel</button>
+                <button onclick="saveSettings()" class="text-xs px-4 py-2 rounded-lg bg-amber-600 text-white font-semibold">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_PROXY_URL = "";
+        let extFiles = { manifest: "", html: "", js: "" };
+
+        window.addEventListener('DOMContentLoaded', updateStatusBadge);
+
+        function getConfig() {
+            return {
+                proxyUrl: localStorage.getItem('hub_proxy_url') || localStorage.getItem('sf_proxy_url') || DEFAULT_PROXY_URL,
+                geminiKey: localStorage.getItem('hub_gemini_key') || localStorage.getItem('sf_gemini_key') || ""
+            };
+        }
+
+        function updateStatusBadge() {
+            const { proxyUrl, geminiKey } = getConfig();
+            document.getElementById('status-dot').className = (proxyUrl || geminiKey) ? "w-2 h-2 rounded-full bg-emerald-400" : "w-2 h-2 rounded-full bg-amber-400";
+            document.getElementById('status-text').textContent = (proxyUrl || geminiKey) ? "AI Ready" : "API Setup";
+        }
+
+        function openSettings() {
+            const { proxyUrl, geminiKey } = getConfig();
+            document.getElementById('proxy-url-input').value = proxyUrl;
+            document.getElementById('gemini-key-input').value = geminiKey;
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
+
+        function saveSettings() {
+            localStorage.setItem('hub_proxy_url', document.getElementById('proxy-url-input').value.trim());
+            localStorage.setItem('hub_gemini_key', document.getElementById('gemini-key-input').value.trim());
+            updateStatusBadge();
+            closeSettings();
+        }
+
+        function useSample(text) { document.getElementById('prompt-input').value = text; }
+
+        function showFile(key) {
+            ['manifest', 'html', 'js'].forEach(k => {
+                document.getElementById('tab-' + k).className = k === key
+                    ? "text-xs font-medium px-3 py-1 rounded-md bg-amber-600 text-white"
+                    : "text-xs font-medium px-3 py-1 rounded-md text-slate-400 hover:text-white";
+            });
+            document.getElementById('file-viewer').textContent = extFiles[key] || "// No content generated yet.";
+        }
+
+        async function generateExtension() {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            if (!prompt) return alert("Please describe your Chrome extension!");
+            const { proxyUrl, geminiKey } = getConfig();
+            if (!proxyUrl && !geminiKey) return openSettings();
+
+            const btn = document.getElementById('generate-btn');
+            const logBox = document.getElementById('build-log');
+            const logTitle = document.getElementById('log-title');
+            const spinner = document.getElementById('log-spinner');
+
+            btn.disabled = true;
+            logBox.classList.remove('hidden');
+            spinner.classList.remove('hidden');
+            logTitle.textContent = "Coding Manifest V3 extension files...";
+
+            const systemPrompt = `You are a senior Chrome Extension developer. Generate a complete Manifest V3 Chrome extension for the user's request.
+Return ONLY a valid JSON object with three string keys: "manifest", "html", and "js" (no markdown fences, no extra text):
+- "manifest": valid JSON string for manifest.json (manifest_version: 3, name, version, description, permissions, action: { default_popup: "popup.html" }, NO icon file paths so Chrome loads it cleanly without missing icon errors).
+- "html": clean, styled popup.html referencing <script src="popup.js"><\/script> (inline scripts are blocked by MV3 CSP, so keep all JS in popup.js).
+- "js": complete working JavaScript for popup.js.`;
+
+            try {
+                let raw = "";
+                if (proxyUrl) {
+                    const res = await fetch(proxyUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ systemPrompt, userMessage: prompt })
+                    });
+                    const data = await res.json();
+                    raw = data.html || data.text || "";
+                } else {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            systemInstruction: { parts: [{ text: systemPrompt }] },
+                            contents: [{ role: "user", parts: [{ text: prompt }] }],
+                            generationConfig: { responseMimeType: "application/json" }
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error.message);
+                    raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                }
+
+                const cleaned = raw.replace(/```json|```/gi, "").trim();
+                const parsed = JSON.parse(cleaned);
+                extFiles = {
+                    manifest: typeof parsed.manifest === 'string' ? parsed.manifest : JSON.stringify(parsed.manifest, null, 2),
+                    html: parsed.html || "",
+                    js: parsed.js || ""
+                };
+
+                showFile('manifest');
+                document.getElementById('zip-btn').disabled = false;
+                spinner.classList.add('hidden');
+                logTitle.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> Extension ready! Click Download .ZIP.`;
+            } catch (err) {
+                spinner.classList.add('hidden');
+                logTitle.textContent = "Error: " + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function downloadZip() {
+            if (!extFiles.manifest) return;
+            const zip = new JSZip();
+            zip.file("manifest.json", extFiles.manifest);
+            zip.file("popup.html", extFiles.html);
+            zip.file("popup.js", extFiles.js);
+            const blob = await zip.generateAsync({ type: "blob" });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "chrome-extension-v3.zip";
+            a.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizForge AI — Interactive Quiz & Entry Test Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .loader-spin { border-top-color: #10b981; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+    <!-- PASTE YOUR ADSTERRA / MONETAG HEAD CODE HERE -->
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- Header -->
+    <header class="h-14 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3">
+            <a href="../" class="flex items-center gap-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 px-2.5 py-1.5 rounded-lg transition">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span class="hidden sm:inline">All Tools</span>
+            </a>
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <i class="fa-solid fa-graduation-cap text-white text-sm"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base tracking-tight">QuizForge AI <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full ml-1">Exam Simulator</span></h1>
+                <p class="text-[11px] text-slate-400 hidden sm:block">Generate Live Timed MCQ Tests & Study Quizzes in 1 Prompt</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button onclick="openSettings()" class="flex items-center gap-1.5 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg transition">
+                <span id="status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span id="status-text">API Setup</span>
+            </button>
+            <button onclick="downloadQuiz()" id="download-btn" disabled class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-medium px-3 py-1.5 rounded-lg transition">
+                <i class="fa-solid fa-download"></i>
+                <span class="hidden sm:inline">Download Quiz</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Workspace -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <!-- Left Controls -->
+        <aside class="w-full md:w-[390px] bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 p-4 flex flex-col justify-between overflow-y-auto shrink-0">
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-300 block mb-1.5">
+                        <i class="fa-solid fa-pen-to-square text-emerald-400 mr-1"></i> Quiz Topic or Syllabus
+                    </label>
+                    <textarea id="prompt-input" rows="4"
+                        placeholder="Example: Create a 10-question MDCAT Biology quiz on Enzymes & Cell Respiration with a 10-minute timer, negative marking option, and detailed answer explanations..."
+                        class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 outline-none resize-none"></textarea>
+
+                    <div class="mt-2 flex gap-2">
+                        <select id="difficulty" class="bg-slate-950 border border-slate-700 text-xs text-slate-300 rounded-lg px-2.5 py-2 outline-none">
+                            <option value="Entry Test / Competitive Level">Level: Entry Test</option>
+                            <option value="Beginner / School Level">Level: Beginner</option>
+                            <option value="University / Technical Interview">Level: Advanced</option>
+                        </select>
+                        <button onclick="generateQuiz()" id="generate-btn"
+                            class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-sm py-2 px-4 rounded-lg shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span id="gen-btn-text">Build Live Test</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sample Prompts -->
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 mb-2">1-Click Test Presets:</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button onclick="useSample('10 MDCAT Chemistry MCQs on Chemical Bonding & Stoichiometry with 8-minute countdown timer and explanations.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">MDCAT Chemistry</button>
+                        <button onclick="useSample('10 JavaScript & Web Development interview MCQs covering closures, promises, and DOM with instant score review.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">JS Interview</button>
+                        <button onclick="useSample('10 NTS General Knowledge & Analytical Reasoning MCQs with timer and step-by-step solutions.')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">NTS Practice</button>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div id="build-log" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs">
+                    <div class="flex items-center gap-2 text-emerald-400 font-medium">
+                        <div id="log-spinner" class="w-3.5 h-3.5 border-2 border-slate-700 loader-spin rounded-full"></div>
+                        <span id="log-title">Generating interactive test app...</span>
+                    </div>
+                </div>
+
+                <!-- Ad Slot -->
+                <div class="bg-slate-950/70 border border-dashed border-slate-800 rounded-xl p-3 flex flex-col items-center justify-center text-center min-h-[140px]">
+                    <span class="text-[10px] uppercase tracking-widest text-slate-600 mb-1">Advertisement</span>
+                    <p class="text-xs text-slate-500">Adsterra / Monetag 300x250 Ad Slot</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Live Quiz Player -->
+        <section class="flex-1 bg-slate-950 flex flex-col overflow-hidden p-0 sm:p-3">
+            <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto px-6">
+                <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto mb-4 text-emerald-400 text-2xl">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <h2 class="text-lg font-bold text-slate-200 mb-1">Interactive Exam Simulator</h2>
+                <p class="text-xs text-slate-400">Enter any subject or exam topic on the left to launch a complete timed MCQ test with instant grading and answer explanations.</p>
+            </div>
+            <iframe id="quiz-frame" class="hidden w-full h-full bg-slate-900 rounded-none sm:rounded-xl border border-slate-800 shadow-2xl" sandbox="allow-scripts"></iframe>
+        </section>
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base"><i class="fa-solid fa-key text-emerald-400 mr-1"></i> API Configuration</h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">Cloudflare Worker Proxy URL</label>
+                    <input id="proxy-url-input" type="url" placeholder="https://your-worker.workers.dev" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">OR Free Google Gemini API Key</label>
+                    <input id="gemini-key-input" type="password" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeSettings()" class="text-xs px-4 py-2 rounded-lg bg-slate-800 text-slate-300">Cancel</button>
+                <button onclick="saveSettings()" class="text-xs px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_PROXY_URL = "";
+        let currentQuizHTML = "";
+
+        window.addEventListener('DOMContentLoaded', updateStatusBadge);
+
+        function getConfig() {
+            return {
+                proxyUrl: localStorage.getItem('hub_proxy_url') || localStorage.getItem('sf_proxy_url') || DEFAULT_PROXY_URL,
+                geminiKey: localStorage.getItem('hub_gemini_key') || localStorage.getItem('sf_gemini_key') || ""
+            };
+        }
+
+        function updateStatusBadge() {
+            const { proxyUrl, geminiKey } = getConfig();
+            document.getElementById('status-dot').className = (proxyUrl || geminiKey) ? "w-2 h-2 rounded-full bg-emerald-400" : "w-2 h-2 rounded-full bg-amber-400";
+            document.getElementById('status-text').textContent = (proxyUrl || geminiKey) ? "AI Ready" : "API Setup";
+        }
+
+        function openSettings() {
+            const { proxyUrl, geminiKey } = getConfig();
+            document.getElementById('proxy-url-input').value = proxyUrl;
+            document.getElementById('gemini-key-input').value = geminiKey;
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
+
+        function saveSettings() {
+            localStorage.setItem('hub_proxy_url', document.getElementById('proxy-url-input').value.trim());
+            localStorage.setItem('hub_gemini_key', document.getElementById('gemini-key-input').value.trim());
+            updateStatusBadge();
+            closeSettings();
+        }
+
+        function useSample(text) { document.getElementById('prompt-input').value = text; }
+
+        async function generateQuiz() {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            if (!prompt) return alert("Please enter a quiz topic!");
+            const { proxyUrl, geminiKey } = getConfig();
+            if (!proxyUrl && !geminiKey) return openSettings();
+
+            const level = document.getElementById('difficulty').value;
+            const btn = document.getElementById('generate-btn');
+            const logBox = document.getElementById('build-log');
+            const logTitle = document.getElementById('log-title');
+            const spinner = document.getElementById('log-spinner');
+
+            btn.disabled = true;
+            logBox.classList.remove('hidden');
+            spinner.classList.remove('hidden');
+            logTitle.textContent = "Generating interactive exam & MCQs...";
+
+            const systemPrompt = `You are an expert educator and frontend developer. Build a complete, self-contained single-file HTML5 interactive MCQ Quiz & Exam Simulator using Tailwind CSS CDN (<script src="https://cdn.tailwindcss.com"><\/script>).
+Rules:
+1. Output ONLY valid HTML starting with <!DOCTYPE html> and ending with </html>.
+2. Include a modern dark UI, Start Screen with instructions, live countdown timer, question progress bar, clickable A/B/C/D options, Next/Previous navigation, Submit button, and a detailed Result Screen showing score percentage, correct/wrong breakdown, and a clear explanation for EVERY question plus a Retake button.
+3. Difficulty Level: ${level}.`;
+
+            try {
+                let raw = "";
+                if (proxyUrl) {
+                    const res = await fetch(proxyUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ systemPrompt, userMessage: prompt })
+                    });
+                    const data = await res.json();
+                    raw = data.html || data.text || "";
+                } else {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            systemInstruction: { parts: [{ text: systemPrompt }] },
+                            contents: [{ role: "user", parts: [{ text: prompt }] }]
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error.message);
+                    raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                }
+
+                const match = raw.match(/```html\s*([\s\S]*?)```/i) || raw.match(/```\s*([\s\S]*?)```/i);
+                const html = match ? match[1].trim() : raw.trim();
+                if (!html.includes("<")) throw new Error("Invalid output from AI.");
+
+                currentQuizHTML = html;
+                document.getElementById('empty-state').classList.add('hidden');
+                const frame = document.getElementById('quiz-frame');
+                frame.classList.remove('hidden');
+                frame.srcdoc = html;
+                document.getElementById('download-btn').disabled = false;
+
+                spinner.classList.add('hidden');
+                logTitle.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> Quiz ready! Start your test on the right.`;
+            } catch (err) {
+                spinner.classList.add('hidden');
+                logTitle.textContent = "Error: " + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function downloadQuiz() {
+            if (!currentQuizHTML) return;
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([currentQuizHTML], { type: 'text/html' }));
+            a.download = 'ai-practice-quiz.html';
+            a.click();
+        }
+    </script>
+</body>
+</html>
