@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Library — 20+ Ready-to-Use Prompts for Websites, Games & Quizzes | ForgeAI Hub</title>
+    <meta name="description" content="Copy and paste high-converting prompts to build responsive websites, playable HTML5 games, Chrome extensions, and study quizzes instantly.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- PASTE YOUR ADSTERRA / MONETAG HEAD CODE HERE -->
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800">
+        <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+            <a href="../" class="flex items-center gap-2 text-sm font-bold text-white">
+                <i class="fa-solid fa-arrow-left text-indigo-400"></i> Back to ForgeAI Hub
+            </a>
+            <span class="text-xs text-slate-400">1-Click Prompt Vault</span>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-10 flex-1 w-full space-y-8">
+        <div class="text-center max-w-2xl mx-auto">
+            <h1 class="text-2xl sm:text-4xl font-extrabold">High-Performing AI Prompt Vault</h1>
+            <p class="text-xs sm:text-sm text-slate-400 mt-2">Copy any tested prompt below and paste it directly into our Website Builder, Game Studio, Exam Simulator, or Extension Builder.</p>
+        </div>
+
+        <!-- Ad Banner -->
+        <div class="bg-slate-900/70 border border-dashed border-slate-800 rounded-xl p-3 text-center text-xs text-slate-500">
+            Advertisement Slot (728x90 Banner)
+        </div>
+
+        <div id="prompt-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </main>
+
+    <script>
+        const PROMPTS = [
+            { tool: "SiteForge AI", link: "../website-builder/", color: "indigo", title: "Modern SaaS Landing Page", text: "Build a dark-mode AI SaaS landing page with animated hero section, interactive pricing toggle (Monthly/Yearly), feature bento grid, testimonials, and FAQ accordion." },
+            { tool: "SiteForge AI", link: "../website-builder/", color: "indigo", title: "E-Commerce Sneaker Store", text: "Create a modern sneaker & streetwear online store with product filter tabs, interactive shopping cart drawer, size selector, and checkout summary modal." },
+            { tool: "ArcadeForge AI", link: "../game-generator/", color: "purple", title: "Neon Space Defender", text: "Create a neon retro space shooter game where my ship moves with Left/Right arrows, fires twin lasers with Spacebar, collects rapid-fire powerups, and fights a boss every 300 points." },
+            { tool: "ArcadeForge AI", link: "../game-generator/", color: "purple", title: "3-Lane Highway Car Dodger", text: "Build a 3-lane top-down highway racing game with nitro speed boost, fuel pickups, coin score multiplier, and synthesized engine/crash sound effects." },
+            { tool: "QuizForge AI", link: "../quiz-maker/", color: "emerald", title: "MDCAT Biology Mock Test", text: "Create a 10-question MDCAT Biology mock exam on Cell Structure & Enzymes with an 8-minute countdown timer, progress bar, and detailed explanation for every MCQ." },
+            { tool: "ExtForge AI", link: "../extension-builder/", color: "amber", title: "Website Dark Mode Switcher", text: "Build a Manifest V3 Chrome extension popup with a toggle switch to invert/darken bright websites, a brightness slider, and a reset button." },
+            { tool: "DocForge AI", link: "../doc-forge/", color: "sky", title: "Freelance Web Dev Invoice", text: "Create a clean professional invoice from Bilal Digital Studio to Apex Logistics for Custom Web Portal Development ($850) and Cloud Deployment ($150), Invoice #2026-09." },
+            { tool: "DocForge AI", link: "../doc-forge/", color: "sky", title: "Upwork / Client Project Proposal", text: "Write a persuasive software development proposal for building a custom inventory & POS web app in 14 days for $700 with milestone breakdown." }
+        ];
+
+        const grid = document.getElementById('prompt-list');
+        PROMPTS.forEach((p, idx) => {
+            grid.innerHTML += `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[11px] font-semibold uppercase tracking-wider text-${p.color}-400">${p.tool}</span>
+                            <a href="${p.link}" class="text-xs text-slate-300 hover:text-white underline">Open Tool &rarr;</a>
+                        </div>
+                        <h2 class="font-bold text-base text-white mb-1">${p.title}</h2>
+                        <p id="p-text-${idx}" class="text-xs text-slate-400 bg-slate-950 border border-slate-800 rounded-lg p-3 leading-relaxed">${p.text}</p>
+                    </div>
+                    <button onclick="copyPrompt(${idx}, this)" class="w-full bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 py-2 rounded-lg transition">
+                        <i class="fa-regular fa-copy mr-1"></i> Copy Prompt
+                    </button>
+                </div>
+            `;
+        });
+
+        function copyPrompt(idx, btn) {
+            navigator.clipboard.writeText(document.getElementById('p-text-' + idx).innerText);
+            btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400 mr-1"></i> Copied!`;
+            setTimeout(() => btn.innerHTML = `<i class="fa-regular fa-copy mr-1"></i> Copy Prompt`, 1600);
+        }
+    </script>
+</body>
+</html>
