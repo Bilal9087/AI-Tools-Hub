@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ForgeAI Hub — Free One-Prompt AI Agents, Website & Game Builders</title>
-    <meta name="description" content="Free suite of specialized AI tools: build websites in 1 prompt, generate playable HTML5 games, create ATS resumes, and optimize images instantly.">
+    <title>ForgeAI Hub — Free One-Prompt AI Agents, Website, Game & Extension Builders</title>
+    <meta name="description" content="Free suite of specialized AI agents: build websites in 1 prompt, generate playable HTML5 games, create timed MCQ quizzes, and build Chrome extensions instantly.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -27,14 +27,16 @@
                 </div>
             </a>
 
-            <nav class="hidden md:flex items-center gap-6 text-sm text-slate-300">
-                <a href="#tools" class="hover:text-white transition">All AI Tools</a>
+            <nav class="hidden md:flex items-center gap-5 text-sm text-slate-300">
+                <a href="#tools" class="hover:text-white transition">All AI Agents</a>
                 <a href="./website-builder/" class="hover:text-indigo-400 transition">Website Builder</a>
                 <a href="./game-generator/" class="hover:text-purple-400 transition">Game Studio</a>
+                <a href="./quiz-maker/" class="hover:text-emerald-400 transition">Exam Simulator</a>
+                <a href="./extension-builder/" class="hover:text-amber-400 transition">Extension Builder</a>
             </nav>
 
             <a href="#tools" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
-                Launch Tools <i class="fa-solid fa-arrow-right ml-1"></i>
+                Launch Agents <i class="fa-solid fa-arrow-right ml-1"></i>
             </a>
         </div>
     </header>
@@ -48,14 +50,14 @@
             Turn a Single Prompt into <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Websites, Games & Apps</span>
         </h1>
         <p class="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto mt-4">
-            Choose a specialized AI Agent below to generate live HTML5 websites, playable arcade games, ATS-friendly resumes, and smart web utilities in seconds.
+            Choose a specialized AI Agent below to generate live HTML5 websites, playable arcade games, timed exam simulators, and Chrome extensions in seconds.
         </p>
 
-        <!-- Search & Category Filter -->
+        <!-- Search Filter -->
         <div class="max-w-xl mx-auto mt-7 flex flex-col sm:flex-row gap-2">
             <div class="relative flex-1">
                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-500 text-sm"></i>
-                <input id="tool-search" onkeyup="filterTools()" type="text" placeholder="Search AI agents (e.g., website, game, resume, image)..."
+                <input id="tool-search" onkeyup="filterTools()" type="text" placeholder="Search AI agents (e.g., website, game, quiz, extension)..."
                     class="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 outline-none">
             </div>
         </div>
@@ -67,11 +69,11 @@
         </div>
     </section>
 
-    <!-- AI Tools Grid -->
+    <!-- AI Agents Grid -->
     <main id="tools" class="max-w-6xl mx-auto px-4 pb-16 flex-1 w-full">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-bold text-slate-200">Available AI Agents & Utilities</h2>
-            <span class="text-xs text-slate-400">Click any tool to open workspace</span>
+            <h2 class="text-lg font-bold text-slate-200">Available One-Prompt AI Agents</h2>
+            <span class="text-xs text-slate-400">Click any agent to open workspace</span>
         </div>
 
         <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -84,7 +86,7 @@
                         <div class="w-12 h-12 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xl">
                             <i class="fa-solid fa-wand-magic-sparkles"></i>
                         </div>
-                        <span class="text-[11px] font-semibold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">Popular</span>
+                        <span class="text-[11px] font-semibold uppercase tracking-wider bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full">Popular</span>
                     </div>
                     <h3 class="text-lg font-bold text-white group-hover:text-indigo-300 transition">SiteForge AI — Website Builder</h3>
                     <p class="text-xs text-slate-400 mt-2 leading-relaxed">
@@ -118,44 +120,44 @@
                 </div>
             </a>
 
-            <!-- Card 3: ATS Resume / CV Builder (Link to your existing CV tool) -->
-            <a href="./cv-maker/" data-tags="cv resume ats job career generator pdf"
-               class="tool-card group bg-slate-900 hover:bg-slate-800/90 border border-slate-800 hover:border-sky-500/60 rounded-2xl p-5 flex flex-col justify-between transition duration-200 shadow-lg">
+            <!-- Card 3: QuizForge AI -->
+            <a href="./quiz-maker/" data-tags="quiz exam mdcat nts test mcq study simulator"
+               class="tool-card group bg-slate-900 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/60 rounded-2xl p-5 flex flex-col justify-between transition duration-200 shadow-lg">
                 <div>
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 text-xl">
-                            <i class="fa-solid fa-file-lines"></i>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl">
+                            <i class="fa-solid fa-graduation-cap"></i>
                         </div>
-                        <span class="text-[11px] font-semibold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full">Career</span>
+                        <span class="text-[11px] font-semibold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">Students</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white group-hover:text-sky-300 transition">ATS Resume & CV Generator</h3>
+                    <h3 class="text-lg font-bold text-white group-hover:text-emerald-300 transition">QuizForge AI — Exam Simulator</h3>
                     <p class="text-xs text-slate-400 mt-2 leading-relaxed">
-                        Build clean, recruiter-approved, ATS-friendly resumes and CVs in minutes with live formatting and instant print/PDF export.
+                        Generate interactive timed MCQ tests for MDCAT, NTS, or coding interviews in 1 prompt with instant scoring and detailed answer explanations.
                     </p>
                 </div>
-                <div class="mt-5 pt-4 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-sky-400">
-                    <span>Build Resume</span>
+                <div class="mt-5 pt-4 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-emerald-400">
+                    <span>Launch Exam Simulator</span>
                     <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                 </div>
             </a>
 
-            <!-- Card 4: PixelPress Image Optimizer (Link to your existing PixelPress tool) -->
-            <a href="./image-tools/" data-tags="image compressor resizer webp converter bulk"
+            <!-- Card 4: ExtForge AI -->
+            <a href="./extension-builder/" data-tags="chrome extension manifest v3 plugin builder zip"
                class="tool-card group bg-slate-900 hover:bg-slate-800/90 border border-slate-800 hover:border-amber-500/60 rounded-2xl p-5 flex flex-col justify-between transition duration-200 shadow-lg">
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <div class="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl">
-                            <i class="fa-solid fa-images"></i>
+                            <i class="fa-solid fa-puzzle-piece"></i>
                         </div>
-                        <span class="text-[11px] font-semibold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full">Utility</span>
+                        <span class="text-[11px] font-semibold uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full">Developers</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white group-hover:text-amber-300 transition">PixelPress Bulk Image Studio</h3>
+                    <h3 class="text-lg font-bold text-white group-hover:text-amber-300 transition">ExtForge AI — Extension Builder</h3>
                     <p class="text-xs text-slate-400 mt-2 leading-relaxed">
-                        Compress, resize, and convert multiple images to WebP or PNG locally in your browser with instant ZIP download.
+                        Describe any Chrome extension idea and download a ready-to-load Manifest V3 `.zip` package with `manifest.json`, `popup.html`, and `popup.js`.
                     </p>
                 </div>
                 <div class="mt-5 pt-4 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-amber-400">
-                    <span>Optimize Images</span>
+                    <span>Build Chrome Extension</span>
                     <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                 </div>
             </a>
