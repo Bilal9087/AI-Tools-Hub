@@ -244,15 +244,9 @@ https://araplhn.org/4/86ad5368805a54d6d207e815dc08c6d1
     </div>
 
     <script>
-        // =========================================================================
-        // OPTIONAL: HARDCODE YOUR PUBLIC CLOUDFLARE WORKER URL HERE BEFORE DEPLOYING
-        // Example: const DEFAULT_PROXY_URL = "https://siteforge-api.bilal.workers.dev";
-        // =========================================================================
         const DEFAULT_PROXY_URL = "";
-
         let currentHTML = "";
 
-        // Initialize API Status on Load
         window.addEventListener('DOMContentLoaded', () => {
             updateStatusBadge();
         });
@@ -345,6 +339,59 @@ https://araplhn.org/4/86ad5368805a54d6d207e815dc08c6d1
             return cleaned;
         }
 
+        async function callGeminiWithFallback(geminiKey, systemPrompt, userMessage, logTitle) {
+            const models = ["gemini-3.8-flash", "gemini-3.0-flash", "gemini-2.5-pro"];
+            let lastError = "All AI models are currently busy.";
+
+            for (let i = 0; i < models.length; i++) {
+                const model = models[i];
+                logTitle.textContent = i === 0
+                    ? "Designing & coding your website..."
+                    : `Primary server busy (503). Switching to ${model}...`;
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 35000); // 35s max per model
+
+                try {
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiKey)}`;
+                    const res = await fetch(endpoint, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        signal: controller.signal,
+                        body: JSON.stringify({
+                            systemInstruction: { parts: [{ text: systemPrompt }] },
+                            contents: [{ role: "user", parts: [{ text: userMessage }] }],
+                            generationConfig: {
+                                temperature: 0.7,
+                                maxOutputTokens: 8192
+                            }
+                        })
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    if (!res.ok) {
+                        const errData = await res.json().catch(() => ({}));
+                        lastError = errData.error?.message || `HTTP ${res.status}`;
+                        // If 503 (overloaded) or 404 (unavailable), try next fallback model immediately
+                        if (res.status === 503 || res.status === 404 || res.status === 429) {
+                            continue;
+                        }
+                        throw new Error(lastError);
+                    }
+
+                    const data = await res.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                    if (text) return text;
+                } catch (e) {
+                    clearTimeout(timeoutId);
+                    lastError = e.name === "AbortError" ? `${model} timed out` : e.message;
+                    if (i === models.length - 1) throw new Error(lastError);
+                }
+            }
+            throw new Error(lastError);
+        }
+
         async function generateWebsite() {
             const prompt = document.getElementById('prompt-input').value.trim();
             if (!prompt) {
@@ -394,19 +441,7 @@ Rules:
                     const data = await res.json();
                     rawOutput = data.html || data.text || "";
                 } else {
-                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(geminiKey)}`;
-                    const res = await fetch(endpoint, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            systemInstruction: { parts: [{ text: systemPrompt }] },
-                            contents: [{ role: "user", parts: [{ text: userMessage }] }],
-                            generationConfig: { temperature: 0.7 }
-                        })
-                    });
-                    const data = await res.json();
-                    if (data.error) throw new Error(data.error.message);
-                    rawOutput = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                    rawOutput = await callGeminiWithFallback(geminiKey, systemPrompt, userMessage, logTitle);
                 }
 
                 const htmlCode = extractCleanHTML(rawOutput);
