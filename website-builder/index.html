@@ -340,7 +340,7 @@ https://araplhn.org/4/86ad5368805a54d6d207e815dc08c6d1
         }
 
         async function callGeminiWithFallback(geminiKey, systemPrompt, userMessage, logTitle) {
-            const models = ["gemini-3.1-pro-preview", "gemini-3.1-flash-lite-preview", "gemini-3.1-pro-preview"];
+            const models = ["gemini-3.1-flash-lite-preview", "gemini-3.1-flash-lite-preview", "gemini-3.1-flash-lite-preview"];
             let lastError = "All AI models are currently busy.";
 
             for (let i = 0; i < models.length; i++) {

@@ -376,7 +376,7 @@ Strict Rules:
                     const data = await res.json();
                     rawOutput = data.html || data.text || "";
                 } else {
-                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${encodeURIComponent(geminiKey)}`;
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${encodeURIComponent(geminiKey)}`;
                     const res = await fetch(endpoint, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
